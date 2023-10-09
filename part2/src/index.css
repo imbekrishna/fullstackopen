@@ -36,7 +36,8 @@ h1 {
   line-height: 1.1;
 }
 
-button , input{
+button,
+input {
   border-radius: 8px;
   border: 1px solid #1a1a1a;
   margin: 0.6em 0.5em;
@@ -48,11 +49,18 @@ button , input{
   transition: border-color 0.25s;
 }
 
-button:hover, input:hover {
+input {
+  cursor: auto;
+}
+
+button:hover,
+input:hover {
   border-color: #646cff;
 }
 button:focus,
-button:focus-visible {
+button:focus-visible,
+input:focus,
+input:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 

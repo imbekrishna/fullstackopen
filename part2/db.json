@@ -29,6 +29,11 @@
       "content": "Try again",
       "important": true,
       "id": 6
+    },
+    {
+      "content": "Testing new note.",
+      "important": true,
+      "id": 7
     }
   ]
 }

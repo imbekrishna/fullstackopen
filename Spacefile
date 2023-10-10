@@ -2,11 +2,8 @@
 v: 0
 micros:
   - name: NoteApp
-    src: ./
+    src: .
     engine: nodejs16
     primary: true
-    commands:
-      - npm start
-    include:
-      - dist
+    run: node index.js
     dev: npm run dev

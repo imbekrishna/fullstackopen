@@ -73,6 +73,20 @@ app.post("/api/notes", (request, response) => {
   response.json(note);
 });
 
+app.put("/api/notes/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const exists = notes.find((n) => n.id === id);
+
+  const note = request.body;
+
+  if (exists) {
+    notes = notes.map((n) => (n.id !== id ? n : note));
+    return response.status(201).json(note);
+  } else {
+    return response.status(404).json({ error: "Request resource not found" });
+  }
+});
+
 app.delete("/api/notes/:id", (request, response) => {
   const id = Number(request.params.id);
   notes = notes.filter((note) => note.id !== id);

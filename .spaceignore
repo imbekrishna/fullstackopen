@@ -1,0 +1,5 @@
+# ignore the requests folder
+requests
+
+# override the default exclude to include dist folder
+!dist

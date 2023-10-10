@@ -1,0 +1,18 @@
+# post data with proper body
+POST http://localhost:3001/api/notes HTTP/1.1
+Content-Type: application/json
+
+{
+    "content": "A new note from rest",
+    "important": false
+}
+
+###
+# post data with malformed body
+
+POST http://localhost:3001/api/notes HTTP/1.1
+Content-Type: application/json
+
+{
+    "important": false
+}

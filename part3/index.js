@@ -79,27 +79,25 @@ app.post("/api/notes", (request, response) => {
     });
 });
 
-app.put("/api/notes/:id", (request, response) => {
-    const id = Number(request.params.id);
-    const exists = notes.find((n) => n.id === id);
+app.put("/api/notes/:id", (request, response, next) => {
+    const body = request.body;
 
-    const note = request.body;
+    const note = {
+        content: body.content,
+        important: body.important,
+    };
 
-    if (exists) {
-        notes = notes.map((n) => (n.id !== id ? n : note));
-        return response.status(201).json(note);
-    } else {
-        return response
-            .status(404)
-            .json({ error: "Request resource not found" });
-    }
+    Note.findByIdAndUpdate(request.params.id, note, { new: true })
+        .then((updatedNote) => response.json(updatedNote))
+        .catch((error) => next(error));
 });
 
-app.delete("/api/notes/:id", (request, response) => {
-    const id = Number(request.params.id);
-    notes = notes.filter((note) => note.id !== id);
-
-    response.status(204).end();
+app.delete("/api/notes/:id", (request, response, next) => {
+    Note.findByIdAndDelete(request.params.id)
+        .then((result) => {
+            response.status(204).end();
+        })
+        .catch((error) => next(error));
 });
 
 const unknownEndpoint = (request, response) => {
@@ -117,14 +115,9 @@ const errorHandler = (error, request, response, next) => {
     next(error);
 };
 
-app.use(errorHandler)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-function generateId() {
-    const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
-    return maxId + 1;
-}

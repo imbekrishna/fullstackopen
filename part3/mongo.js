@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 if (process.argv.length < 3) {
-  console.log("give password as argument");
+  console.log('give password as argument');
   process.exit(1);
 }
 
@@ -10,7 +10,7 @@ const password = process.argv[2];
 
 const url = `mongodb+srv://be-krishna:${password}@cluster0.2kz3u.mongodb.net/notes-app?retryWrites=true&w=majority`;
 
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', false);
 mongoose.connect(url);
 
 const noteSchema = new mongoose.Schema({
@@ -18,7 +18,7 @@ const noteSchema = new mongoose.Schema({
   important: Boolean,
 });
 
-const Note = mongoose.model("Note", noteSchema);
+const Note = mongoose.model('Note', noteSchema);
 
 // const note = new Note({
 //   content: "HTML is Easy",

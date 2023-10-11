@@ -1,0 +1,9 @@
+# update a note
+PUT http://localhost:3001/api/notes/6525b991948456744c3ed0ff HTTP/1.1
+Content-Type: application/json
+
+{
+    "content": "HTML is smooth as butter",
+    "important": false
+}
+

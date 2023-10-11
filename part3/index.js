@@ -46,12 +46,18 @@ app.get("/api/notes", (request, response) => {
     });
 });
 
-app.get("/api/notes/:id", (request, response) => {
+app.get("/api/notes/:id", (request, response, next) => {
     const id = request.params.id;
 
-    Note.findById(id).then((note) => {
-        response.json(note);
-    });
+    Note.findById(id)
+        .then((note) => {
+            if (note) {
+                response.json(note);
+            } else {
+                response.status(404).end();
+            }
+        })
+        .catch((error) => next(error));
 });
 
 app.post("/api/notes", (request, response) => {
@@ -101,6 +107,17 @@ const unknownEndpoint = (request, response) => {
 };
 
 app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message);
+
+    if (error.name === "CastError") {
+        return response.status(400).send({ error: "malformatted id" });
+    }
+    next(error);
+};
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -49,7 +49,7 @@ test('a valid note can be added', async () => {
 
   expect(notesAtEnd).toHaveLength(helper.initialNotes.length + 1);
 
-  const contents = notesAtEnd.map(n => n.content);
+  const contents = notesAtEnd.map((n) => n.content);
   expect(contents).toContain('async/await simplifies making async calls');
 });
 
@@ -63,6 +63,33 @@ test('note without content is not added', async () => {
   const notesAtEnd = await helper.notesInDb();
 
   expect(notesAtEnd).toHaveLength(helper.initialNotes.length);
+});
+
+test('a specific note can be viewed', async () => {
+  const notesAtStart = await helper.notesInDb();
+  const noteToView = notesAtStart[0];
+
+  const resultNote = await api
+    .get(`/api/notes/${noteToView.id}`)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  expect(resultNote.body).toEqual(noteToView);
+});
+
+test('a note can be delted', async () => {
+  const notesAtStart = await helper.notesInDb();
+  const noteToDelte = notesAtStart[0];
+
+  await api.delete(`/api/notes/${noteToDelte.id}`).expect(204);
+
+  const notesAtEnd = await helper.notesInDb();
+
+  expect(notesAtEnd).toHaveLength(helper.initialNotes.length - 1);
+
+  const contents = notesAtEnd.map((r) => r.content);
+
+  expect(contents).not.toContain(noteToDelte.content);
 });
 
 afterAll(async () => {

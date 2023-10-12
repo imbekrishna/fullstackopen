@@ -1,8 +1,27 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
-
 const api = supertest(app);
+const Note = require('../models/note');
+
+const initialNotes = [
+  {
+    content: 'HTML is easy',
+    important: false,
+  },
+  {
+    content: 'Browser can execute only JavaScript',
+    important: true,
+  },
+];
+
+beforeEach(async () => {
+  await Note.deleteMany({});
+  let noteObject = new Note(initialNotes[0]);
+  await noteObject.save();
+  noteObject = new Note(initialNotes[1]);
+  await noteObject.save();
+});
 
 test('notes are returned as json', async () => {
   await api
@@ -11,14 +30,17 @@ test('notes are returned as json', async () => {
     .expect('Content-Type', /application\/json/);
 });
 
-test('should have two notes', async () => {
+test('all notes are returned', async () => {
   const response = await api.get('/api/notes');
-  expect(response.body).toHaveLength(2);
+  expect(response.body).toHaveLength(initialNotes.length);
 });
 
-test('should have content: HTML is easy', async () => {
+test('a specific note is within returned notes', async () => {
   const response = await api.get('/api/notes');
-  expect(response.body[0].content).toBe('HTML is easy');
+
+  const contents = response.body.map((n) => n.content);
+
+  expect(contents).toContain('Browser can execute only JavaScript');
 });
 
 afterAll(async () => {

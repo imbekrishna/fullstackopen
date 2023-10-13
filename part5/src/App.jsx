@@ -13,10 +13,20 @@ const App = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
+
   useEffect(() => {
     noteService.getAll().then((initialNotes) => {
       setNotes(initialNotes);
     });
+  }, []);
+
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedNoteAppUser');
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON);
+      setUser(user);
+      noteService.setToken(user.token);
+    }
   }, []);
 
   const addNote = (event) => {
@@ -42,7 +52,10 @@ const App = () => {
 
     try {
       const user = await loginService.login({ username, password });
-      console.log(user);
+
+      window.localStorage.setItem('loggedNoteAppUser', JSON.stringify(user));
+
+      noteService.setToken(user.token);
       setUser(user);
       setUsername('');
       setPassword('');
@@ -52,6 +65,11 @@ const App = () => {
         setErroMessage(null);
       }, 5000);
     }
+  };
+
+  const handleLogout = () => {
+    window.localStorage.removeItem('loggedNoteAppUser');
+    setUser(null);
   };
 
   const toggleImportanceOf = (id) => {
@@ -121,7 +139,9 @@ const App = () => {
         loginForm()
       ) : (
         <div>
-          <p>{user.name} logged in</p>
+          <p>
+            {user.name} logged in | <a onClick={handleLogout}>logout</a>
+          </p>
         </div>
       )}
       <ul>

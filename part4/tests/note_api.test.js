@@ -33,7 +33,16 @@ describe('when there is initially some notes saved', () => {
 });
 
 describe('addition of a new note', () => {
-  test('should succeed with valid data', async () => {
+  let bearerToken;
+
+  beforeEach(async () => {
+    const user = await api
+      .post('/api/login/')
+      .send({ username: 'root', password: 'secret' });
+    bearerToken = user.body.token;
+  });
+
+  test('should succeed with valid data and valid user', async () => {
     const newNote = {
       content: 'async/await simplifies making async calls',
       important: true,
@@ -41,6 +50,7 @@ describe('addition of a new note', () => {
 
     await api
       .post('/api/notes')
+      .set('Authorization', `Bearer ${bearerToken}`)
       .send(newNote)
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -53,12 +63,33 @@ describe('addition of a new note', () => {
     expect(contents).toContain('async/await simplifies making async calls');
   });
 
-  test('should fail with status code 400 with invalid data', async () => {
+  test('should fail with status code 400 with invalid data and valid user', async () => {
     const newNote = {
       important: true,
     };
 
-    await api.post('/api/notes').send(newNote).expect(400);
+    await api
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${bearerToken}`)
+      .send(newNote)
+      .expect(400);
+
+    const notesAtEnd = await helper.notesInDb();
+
+    expect(notesAtEnd).toHaveLength(helper.initialNotes.length);
+  });
+
+  test('should fail with status code 401 with valid data and invalid user', async () => {
+    const newNote = {
+      content: 'This is a valid note',
+      important: true,
+    };
+
+    await api
+      .post('/api/notes')
+      .set('Authorization', 'Bearer soemRandomemispelled3452345^^&%')
+      .send(newNote)
+      .expect(401);
 
     const notesAtEnd = await helper.notesInDb();
 

@@ -6,14 +6,12 @@ import loginService from './services/login';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 import Togglable from './components/Togglable';
+import NoteForm from './components/NoteForm';
 
 const App = () => {
   const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState('a new note...');
   const [showAll, setShowAll] = useState(true);
   const [erroMessage, setErroMessage] = useState(null);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -31,27 +29,13 @@ const App = () => {
     }
   }, []);
 
-  const addNote = (event) => {
-    event.preventDefault();
-    const noteObject = {
-      content: newNote,
-      important: Math.random() < 0.5,
-      id: notes.length + 1,
-    };
-
+  const addNote = (noteObject) => {
     noteService.create(noteObject).then((note) => {
       setNotes([...notes, note]);
-      setNewNote('');
     });
   };
 
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value);
-  };
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
+  const handleLogin = async ({ username, password }) => {
     try {
       const user = await loginService.login({ username, password });
 
@@ -59,8 +43,6 @@ const App = () => {
 
       noteService.setToken(user.token);
       setUser(user);
-      setUsername('');
-      setPassword('');
     } catch (exception) {
       setErroMessage('Wrong credentials');
       setTimeout(() => {
@@ -100,23 +82,16 @@ const App = () => {
 
   const noteForm = () => {
     return (
-      <form onSubmit={addNote}>
-        <input type="text" value={newNote} onChange={handleNoteChange} />
-        <button type="submit">save</button>
-      </form>
+      <Togglable buttonLabel="New Note">
+        <NoteForm createNote={addNote} />
+      </Togglable>
     );
   };
 
   const loginForm = () => {
     return (
       <Togglable buttonLabel="login">
-        <LoginForm
-          username={username}
-          password={password}
-          handleUsernameChange={({ target }) => setUsername(target.value)}
-          handlePasswordChange={({ target }) => setPassword(target.value)}
-          handleSubmit={handleLogin}
-        />
+        <LoginForm loginUser={handleLogin} />
       </Togglable>
     );
   };

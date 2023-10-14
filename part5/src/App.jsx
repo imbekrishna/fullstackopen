@@ -4,6 +4,8 @@ import Note from './components/Note';
 import noteService from './services/notes';
 import loginService from './services/login';
 import Notification from './components/Notification';
+import LoginForm from './components/LoginForm';
+import Togglable from './components/Togglable';
 
 const App = () => {
   const [notes, setNotes] = useState([]);
@@ -96,38 +98,26 @@ const App = () => {
     ? notes
     : notes.filter((note) => note.important === true);
 
-  const loginForm = () => {
-    return (
-      <form onSubmit={handleLogin}>
-        <div>
-          username
-          <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </div>
-        <div>
-          password
-          <input
-            type="password"
-            value={password}
-            name="Password"
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </div>
-        <button type="submit">login</button>
-      </form>
-    );
-  };
-
   const noteForm = () => {
     return (
       <form onSubmit={addNote}>
         <input type="text" value={newNote} onChange={handleNoteChange} />
         <button type="submit">save</button>
       </form>
+    );
+  };
+
+  const loginForm = () => {
+    return (
+      <Togglable buttonLabel="login">
+        <LoginForm
+          username={username}
+          password={password}
+          handleUsernameChange={({ target }) => setUsername(target.value)}
+          handlePasswordChange={({ target }) => setPassword(target.value)}
+          handleSubmit={handleLogin}
+        />
+      </Togglable>
     );
   };
 

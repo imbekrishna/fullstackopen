@@ -7,7 +7,7 @@
     },
     {
       "content": "state changes are made with actions",
-      "important": false,
+      "important": true,
       "id": 2
     },
     {
@@ -17,12 +17,12 @@
     },
     {
       "content": "one more note",
-      "important": false,
+      "important": true,
       "id": 4
     },
     {
       "content": "Another note...",
-      "important": false,
+      "important": true,
       "id": 5
     }
   ]

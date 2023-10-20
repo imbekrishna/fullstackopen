@@ -7,12 +7,17 @@ import LoginForm from './components/LoginForm';
 import PhoneForm from './components/PhoneForm';
 
 import { useApolloClient, useQuery } from '@apollo/client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ALL_PERSONS } from './queries';
 
 function App() {
   const [errorMessages, setErrorMessages] = useState(null);
   const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('phone-number-users-token');
+    setToken(token);
+  }, []);
 
   const result = useQuery(ALL_PERSONS);
   const client = useApolloClient();

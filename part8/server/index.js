@@ -8,6 +8,10 @@ const { makeExecutableSchema } = require('@graphql-tools/schema');
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
+const bodyParser = require('body-parser');
+
+const { WebSocketServer } = require('ws');
+const { useServer } = require('graphql-ws/lib/use/ws');
 
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -27,13 +31,34 @@ mongoose
     console.log('error connecting to mongodb', error.message);
   });
 
+mongoose.set('debug', true);
+
 const start = async () => {
   const app = express();
   const httpServer = http.createServer(app);
 
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/',
+  });
+
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
+  const serverCleanUp = useServer({ schema }, wsServer);
+
   const server = new ApolloServer({
-    schema: makeExecutableSchema({ typeDefs, resolvers }),
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanUp.dispose();
+            },
+          };
+        },
+      },
+    ],
   });
 
   await server.start();
@@ -42,6 +67,7 @@ const start = async () => {
     '/',
     cors(),
     express.json(),
+    bodyParser.json(),
     expressMiddleware(server, {
       context: async ({ req }) => {
         const auth = req ? req.headers.authorization : null;

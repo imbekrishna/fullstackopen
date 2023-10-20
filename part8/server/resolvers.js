@@ -1,18 +1,21 @@
 const { GraphQLError } = require('graphql');
+const { PubSub } = require('graphql-subscriptions');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Person = require('./models/person');
 const User = require('./models/user');
+
+const pubSub = new PubSub();
 
 const resolvers = {
   Query: {
     personCount: async () => Person.collection.countDocuments(),
     allPersons: async (root, args) => {
       if (!args.phone) {
-        return Person.find({});
+        return Person.find({}).populate('friendOf');
       }
 
-      return Person.find({ phone: { $exists: args.phone === 'YES' } });
+      return Person.find({ phone: { $exists: args.phone === 'YES' } }).populate('friendOf');
     },
     findPerson: async (root, args) => Person.findOne({ name: args.name }),
     me: (root, args, context) => context.currentUser,
@@ -23,7 +26,7 @@ const resolvers = {
         street: root.street,
         city: root.city,
       };
-    },
+    }
   },
   Mutation: {
     addPerson: async (root, args, context) => {
@@ -51,6 +54,9 @@ const resolvers = {
           },
         });
       }
+
+      pubSub.publish('PERSON_ADDED', { personAdded: person });
+
       return person;
     },
     editNumber: async (root, args) => {
@@ -135,6 +141,11 @@ const resolvers = {
 
       await currentUser.save();
       return currentUser;
+    },
+  },
+  Subscription: {
+    personAdded: {
+      subscribe: () => pubSub.asyncIterator('PERSON_ADDED'),
     },
   },
 };

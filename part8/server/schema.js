@@ -13,7 +13,8 @@ const typeDefs = `
   type Person {
     name: String!
     phone: String
-    address: Address
+    address: Address!
+    friendOf: [User!]!
     id: ID!
   }
 
@@ -62,6 +63,10 @@ const typeDefs = `
     addAsFriend(
       name: String!
     ):User
+  }
+
+  type Subscription {
+    personAdded: Person!
   }
 
 `;

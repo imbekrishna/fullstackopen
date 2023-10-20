@@ -6,9 +6,13 @@ import Persons from './components/Persons';
 import LoginForm from './components/LoginForm';
 import PhoneForm from './components/PhoneForm';
 
-import { useApolloClient, useQuery } from '@apollo/client';
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client';
 import { useEffect, useState } from 'react';
-import { ALL_PERSONS } from './queries';
+import { ALL_PERSONS, PERSON_ADDED } from './queries';
+
+import jwt_decode from 'jwt-decode';
+
+import updateCache from './helper/updateCache';
 
 function App() {
   const [errorMessages, setErrorMessages] = useState(null);
@@ -16,11 +20,27 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('phone-number-users-token');
-    setToken(token);
+    if (token) {
+      const decoded = jwt_decode(token);
+      if (decoded.exp < Date.now() / 1000) {
+        localStorage.removeItem('phone-number-users-token');
+      } else {
+        setToken(token);
+      }
+    }
   }, []);
 
   const result = useQuery(ALL_PERSONS);
   const client = useApolloClient();
+
+  useSubscription(PERSON_ADDED, {
+    onData: ({ data }) => {
+      const addedPerson = data.data.personAdded;
+      notify(`${addedPerson.name} added`);
+
+      updateCache(client.cache, { query: ALL_PERSONS }, addedPerson);
+    },
+  });
 
   const notify = (message) => {
     setErrorMessages(message);

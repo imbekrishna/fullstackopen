@@ -59,10 +59,10 @@ const ItemSeparator = () => <View style={styles.separator} />;
 
 const RepositoryList = () => {
   return (
-    <FlatList data={repositories} ItemSeparatorComponent={ItemSeparator}
-    renderItem={({item}) => (
-      <RepositoryItem key={item.id} item={item}/>
-    )}
+    <FlatList
+      data={repositories}
+      ItemSeparatorComponent={ItemSeparator}
+      renderItem={({ item }) => <RepositoryItem key={item.id} item={item} />}
     />
   );
 };

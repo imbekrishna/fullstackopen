@@ -6,17 +6,23 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "eslint ./src/**/*.{js, jsx} App.js --no-error-on-unmatched-pattern"
   },
   "dependencies": {
     "expo": "~48.0.21",
     "expo-status-bar": "~1.4.4",
     "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-native": "0.71.14",
-    "react-dom": "18.2.0"
+    "expo-constants": "~14.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@babel/eslint-parser": "^7.22.15",
+    "eslint": "^8.52.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-native": "^4.1.0"
   },
   "private": true
 }

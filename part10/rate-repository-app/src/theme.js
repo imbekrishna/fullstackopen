@@ -1,3 +1,16 @@
+import { Platform } from 'react-native';
+
+function getFont() {
+  switch (Platform.OS) {
+    case 'android':
+      return 'Roboto';
+    case 'ios':
+      return 'Arial';
+    default:
+      return 'System';
+  }
+}
+
 const theme = {
   colors: {
     textPrimary: '#24292e',
@@ -14,7 +27,7 @@ const theme = {
     title: 24,
   },
   fonts: {
-    main: 'System',
+    main: getFont(),
   },
   fontWeights: {
     normal: '400',

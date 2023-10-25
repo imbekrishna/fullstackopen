@@ -4,6 +4,8 @@ import FormikInput from './FormikTextInput';
 import Text from './Text';
 import theme from '../theme';
 
+import * as yup from 'yup';
+
 const initialValues = {
   username: '',
   password: '',
@@ -25,11 +27,17 @@ const styles = StyleSheet.create({
   },
 });
 
+const validaionSchema = yup.object().shape({
+  username: yup.string().required('Username is required'),
+  password: yup.string().required('Password is required'),
+});
+
 const SignIn = () => {
   return (
     <View style={{ backgroundColor: 'white', padding: 20 }}>
       <Formik
         initialValues={initialValues}
+        validationSchema={validaionSchema}
         onSubmit={() => console.log('submitted')}
       >
         {({ handleSubmit }) => (
@@ -46,7 +54,9 @@ const SignIn = () => {
               onPress={handleSubmit}
               style={styles.appButtonContainer}
             >
-              <Text fontSize="heading" style={styles.appButtonText}>Sign in</Text>
+              <Text fontSize="heading" style={styles.appButtonText}>
+                Sign in
+              </Text>
             </TouchableOpacity>
           </View>
         )}

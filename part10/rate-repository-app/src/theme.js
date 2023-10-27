@@ -19,6 +19,7 @@ const theme = {
     background: '#24292e',
     mainBackground: '#e1e4e8',
     error: '#d73a4a',
+    formBackground: "#ffffff"
   },
   fontSizes: {
     body: 14,

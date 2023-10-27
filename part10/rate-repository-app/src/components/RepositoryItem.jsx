@@ -2,6 +2,7 @@ import { View, Image, StyleSheet } from 'react-native';
 import React from 'react';
 import Text from './Text';
 import theme from '../theme';
+import Button from './Button';
 
 const styles = StyleSheet.create({
   container: {
@@ -44,9 +45,9 @@ const formatter = Intl.NumberFormat('en', {
   maximumSignificantDigits: 3,
 });
 
-const RepositoryItem = ({ item }) => {
+const RepositoryItem = ({ item, showOpen = false, handleOpen = null }) => {
   return (
-    <View style={styles.container}>
+    <View testID="repositoryItem" style={styles.container}>
       <View
         style={{
           display: 'flex',
@@ -95,6 +96,7 @@ const RepositoryItem = ({ item }) => {
           <Text>Rating</Text>
         </View>
       </View>
+      {showOpen && <Button title="Open in Github" handleSubmit={handleOpen} />}
     </View>
   );
 };

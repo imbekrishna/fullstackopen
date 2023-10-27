@@ -1,8 +1,11 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Constants from 'expo-constants';
 import Text from './Text';
 import theme from '../theme';
-import { Link } from 'react-router-native';
+import { Link, useNavigate } from 'react-router-native';
+import { useApolloClient, useQuery } from '@apollo/client';
+import { GET_ME } from '../graphql/queries';
+import useAuthStorage from '../hooks/useAuthStorage';
 
 const styles = StyleSheet.create({
   container: {
@@ -14,11 +17,26 @@ const styles = StyleSheet.create({
   },
   tabStyle: {
     color: 'white',
-    marginRight: 10,
+    marginRight: 20,
   },
 });
 
 const AppBar = () => {
+  const data = useQuery(GET_ME);
+  const authStorage = useAuthStorage();
+  const client = useApolloClient();
+  const navigate = useNavigate();
+
+  const signOut = async () => {
+    await authStorage.removeAccessToken('auth:accessToken');
+    client.resetStore();
+    navigate('/');
+  };
+
+  if (data.loading) {
+    return;
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView horizontal>
@@ -27,13 +45,62 @@ const AppBar = () => {
             Repositories
           </Text>
         </Link>
-        <Link to="/signin">
-          <Text fontWeight="bold" fontSize="heading" style={styles.tabStyle}>
-            Sign in
-          </Text>
-        </Link>
+        {data.data.me !== null ? (
+          <>
+            <Link to="/review">
+              <Text
+                fontWeight="bold"
+                fontSize="heading"
+                style={styles.tabStyle}
+              >
+                Create a review
+              </Text>
+            </Link>
+            <Link to="/myReviews">
+              <Text
+                fontWeight="bold"
+                fontSize="heading"
+                style={styles.tabStyle}
+              >
+                My reviews
+              </Text>
+            </Link>
+            <SignOutButton signOut={signOut} />
+          </>
+        ) : (
+          <>
+            <Link to="/signin">
+              <Text
+                fontWeight="bold"
+                fontSize="heading"
+                style={styles.tabStyle}
+              >
+                Sign in
+              </Text>
+            </Link>
+            <Link to="/signup">
+              <Text
+                fontWeight="bold"
+                fontSize="heading"
+                style={styles.tabStyle}
+              >
+                Sign up
+              </Text>
+            </Link>
+          </>
+        )}
       </ScrollView>
     </View>
+  );
+};
+
+export const SignOutButton = ({ signOut }) => {
+  return (
+    <Pressable onPress={signOut}>
+      <Text fontWeight="bold" fontSize="heading" style={styles.tabStyle}>
+        Sign Out
+      </Text>
+    </Pressable>
   );
 };
 

@@ -1,69 +1,167 @@
-import { View, StyleSheet, FlatList } from 'react-native';
-import React from 'react';
+import { View, StyleSheet, FlatList, Pressable } from 'react-native';
 import RepositoryItem from './RepositoryItem';
+import useRepository from '../hooks/useRepositories';
+import { useNavigate } from 'react-router-native';
+import { Button, Menu, Searchbar } from 'react-native-paper';
+import theme from '../theme';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
+import Text from './Text';
 
 const styles = StyleSheet.create({
   separator: {
     height: 10,
   },
+  formContainer: {
+    backgroundColor: theme.colors.mainBackground,
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.background,
+  },
+  mainContainer: {
+    flex: 1,
+  },
 });
 
-const repositories = [
-  {
-    id: 'jaredpalmer.formik',
-    fullName: 'jaredpalmer/formik',
-    description: 'Build forms in React, without the tears',
-    language: 'TypeScript',
-    forksCount: 1589,
-    stargazersCount: 21553,
-    ratingAverage: 88,
-    reviewCount: 4,
-    ownerAvatarUrl: 'https://avatars2.githubusercontent.com/u/4060187?v=4',
-  },
-  {
-    id: 'rails.rails',
-    fullName: 'rails/rails',
-    description: 'Ruby on Rails',
-    language: 'Ruby',
-    forksCount: 18349,
-    stargazersCount: 45377,
-    ratingAverage: 100,
-    reviewCount: 2,
-    ownerAvatarUrl: 'https://avatars1.githubusercontent.com/u/4223?v=4',
-  },
-  {
-    id: 'django.django',
-    fullName: 'django/django',
-    description: 'The Web framework for perfectionists with deadlines.',
-    language: 'Python',
-    forksCount: 21015,
-    stargazersCount: 48496,
-    ratingAverage: 73,
-    reviewCount: 5,
-    ownerAvatarUrl: 'https://avatars2.githubusercontent.com/u/27804?v=4',
-  },
-  {
-    id: 'reduxjs.redux',
-    fullName: 'reduxjs/redux',
-    description: 'Predictable state container for JavaScript apps',
-    language: 'TypeScript',
-    forksCount: 13902,
-    stargazersCount: 52869,
-    ratingAverage: 0,
-    reviewCount: 0,
-    ownerAvatarUrl: 'https://avatars3.githubusercontent.com/u/13142323?v=4',
-  },
-];
+const SearchHeader = ({ refetch }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [value] = useDebounce(searchQuery, 500);
+  const onChangeSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  useEffect(() => {
+    async function getData() {
+      try {
+        await refetch({
+          searchKeyword: value,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    getData();
+  }, [value]);
+
+  return (
+    <Searchbar
+      style={{
+        borderRadius: 5,
+        backgroundColor: theme.colors.formBackground,
+      }}
+      placeholder="Search"
+      onChangeText={onChangeSearch}
+      value={searchQuery}
+    />
+  );
+};
+
+const FilterHeader = ({ refetch }) => {
+  const [visible, setVisible] = useState(false);
+  const [buttonTitle, setButtonTitle] = useState('Latest Repositories');
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
+
+  const handleClick = async (title, orderBy, orderDirection) => {
+    setButtonTitle(title);
+    closeMenu();
+    await refetch({
+      orderBy,
+      orderDirection,
+    });
+  };
+
+  return (
+    <View>
+      <Menu
+        visible={visible}
+        onDismiss={closeMenu}
+        anchor={
+          <Button
+            icon="menu-down"
+            contentStyle={{
+              flexDirection: 'row-reverse',
+              justifyContent: 'space-between',
+            }}
+            style={{
+              marginTop: 20,
+            }}
+            onPress={openMenu}
+          >
+            <Text fontSize="heading">{buttonTitle}</Text>
+          </Button>
+        }
+      >
+        <Menu.Item title="Select an item..." disabled />
+        <Menu.Item
+          onPress={() =>
+            handleClick('Latest Repositories', 'CREATED_AT', 'DESC')
+          }
+          title="Latest Repositories"
+        />
+        <Menu.Item
+          onPress={() =>
+            handleClick('Highest rated repositories', 'RATING_AVERAGE', 'DESC')
+          }
+          title="Highest rated repositories"
+        />
+        <Menu.Item
+          onPress={() => {
+            handleClick('Lowest rated repositories', 'RATING_AVERAGE', 'ASC');
+          }}
+          title="Lowest rated repositories"
+        />
+      </Menu>
+    </View>
+  );
+};
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
-const RepositoryList = () => {
+export const RepositoryListContainer = ({ repositories, onEndReach }) => {
+  const navigate = useNavigate();
+
+  const repositoryNodes = repositories
+    ? repositories.edges.map((edge) => edge.node)
+    : [];
+
   return (
     <FlatList
-      data={repositories}
+      data={repositoryNodes}
       ItemSeparatorComponent={ItemSeparator}
-      renderItem={({ item }) => <RepositoryItem key={item.id} item={item} />}
+      renderItem={({ item }) => (
+        <Pressable onPress={() => navigate(`/${item.id}`)}>
+          <RepositoryItem key={item.id} item={item} />
+        </Pressable>
+      )}
+      onEndReached={onEndReach}
+      onEndReachedThreshold={0.5}
     />
+  );
+};
+
+const RepositoryList = () => {
+  const { repositories, refetch, fetchMore } = useRepository({
+    first: 3,
+  });
+
+  const onEndReach = () => {
+    console.log('fetching more');
+    fetchMore();
+  };
+
+  return (
+    <View>
+      <View style={styles.formContainer}>
+        <SearchHeader refetch={refetch} />
+        <FilterHeader refetch={refetch} />
+      </View>
+      <RepositoryListContainer
+        repositories={repositories}
+        onEndReach={onEndReach}
+      />
+    </View>
   );
 };
 
